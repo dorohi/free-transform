@@ -15,7 +15,8 @@
     "coverage": "codecov"
   },
   "dependencies": {
-    "transformation-matrix": "^1.14.0"
+    "transformation-matrix": "^1.14.0",
+    "yarn": "^1.19.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
