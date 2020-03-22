@@ -45,91 +45,91 @@ export default (scaleType, {
   aspectRatio = false,
   enableAspectRatio = true
 }, onUpdate) => {
-
+  
   // allow ratio to be set at a specific ratio
-  const ratio = aspectRatio && aspectRatio != true ? aspectRatio : (width * scaleX) / (height * scaleY);
-
-  let point; 
+  const ratio = aspectRatio && aspectRatio !== true ? aspectRatio : (width * scaleX) / (height * scaleY);
+  
+  let point;
   let oppositePoint;
   // let startX; // uncomment when removing them as arguments
   // let startY;
-  if(!event) { // prevents breaking change
+  if (!event) { // prevents breaking change
     event = {
       pageX: startX,
       pageY: startY,
       altKey: scaleFromCenter,
       shiftKey: aspectRatio,
     }
-
+    
     scaleFromCenter = false;
     aspectRatio = false;
   }
-
-  const currentProps = { x, y, scaleX, scaleY };
-
+  
+  const currentProps = {x, y, scaleX, scaleY};
+  
   var prevScaleFromCenterToggled = null; // will always fire the first time because scaleFromCenterToggled will always be true/false
   const drag = (event) => {
-
+    
     // check control keys
-    let aspectRatioToggled = enableAspectRatio && !event.shiftKey != !aspectRatio;
-    let scaleFromCenterToggled = enableScaleFromCenter && !event.altKey != !scaleFromCenter;
-
+    let aspectRatioToggled = enableAspectRatio && !event.shiftKey !== !aspectRatio;
+    let scaleFromCenterToggled = enableScaleFromCenter && !event.altKey !== !scaleFromCenter;
+    
     // initialize center if point changed.
-    if(scaleFromCenterToggled !== prevScaleFromCenterToggled) {
+    if (scaleFromCenterToggled !== prevScaleFromCenterToggled) {
       prevScaleFromCenterToggled = scaleFromCenterToggled;
-
-      startX = event.pageX;
-      startY = event.pageY;
-
-      point = getPoint(scaleType, { ...currentProps, width, height, angle, scaleFromCenter: scaleFromCenterToggled });
-      oppositePoint = getOppositePoint(scaleType, { ...currentProps, width, height, angle });
-
+      
+      startX = event.pageX || event.targetTouches[0].pageX;
+      startY = event.pageY || event.targetTouches[0].pageY;
+      
+      point = getPoint(scaleType, {...currentProps, width, height, angle, scaleFromCenter: scaleFromCenterToggled});
+      oppositePoint = getOppositePoint(scaleType, {...currentProps, width, height, angle});
+      
       return; // moveDiff will be zero anyway. this is just an initializing call.
     }
-
+    
     const moveDiff = {
-      x: event.pageX - startX,
-      y: event.pageY - startY
-    }
-
-    const movePoint = getMovePoint(scaleType, oppositePoint, point, moveDiff)
-
+      x: (event.pageX  || event.targetTouches[0].pageX) - startX,
+      y: (event.pageY  || event.targetTouches[0].pageY) - startY
+    };
+    
+    const movePoint = getMovePoint(scaleType, oppositePoint, point, moveDiff);
+    
     if (scaleFromCenterToggled) {
-      movePoint.x *= 2
-      movePoint.y *= 2
+      movePoint.x *= 2;
+      movePoint.y *= 2;
     }
-
+    
     const {sin, cos} = getSineCosine(scaleType, angle);
-
+    
     const rotationPoint = {
       x: movePoint.x * cos + movePoint.y * sin,
       y: movePoint.y * cos - movePoint.x * sin
-    }
+    };
     
     currentProps.scaleX = Math.max(rotationPoint.x / width, scaleLimit);
     currentProps.scaleY = Math.max(rotationPoint.y / height, scaleLimit);
-
+    
     switch (scaleType) {
-    case 'ml':
-    case 'mr':
-      currentProps.scaleY = scaleY
-      if (aspectRatioToggled) {
-        currentProps.scaleY = ((width * currentProps.scaleX) * (1 / ratio)) / height;
-      }
-      break;
-    case 'tm':
-    case 'bm':
-      currentProps.scaleX = scaleX
-      if (aspectRatioToggled) {
-        currentProps.scaleX = ((height * currentProps.scaleY) * ratio) / width;
-      }
-      break;
-    default:
-      if (aspectRatioToggled) {
-        currentProps.scaleY = ((width * currentProps.scaleX) * (1 / ratio)) / height;
-      }
+      case 'ml':
+      case 'mr':
+        currentProps.scaleY = scaleY;
+        if (aspectRatioToggled) {
+          currentProps.scaleY = ((width * currentProps.scaleX) * (1 / ratio)) / height;
+        }
+        break;
+      case 'tm':
+      case 'bm':
+        currentProps.scaleX = scaleX;
+        if (aspectRatioToggled) {
+          currentProps.scaleX = ((height * currentProps.scaleY) * ratio) / width;
+        }
+        break;
+      default:
+        if (aspectRatioToggled) {
+          currentProps.scaleY = ((width * currentProps.scaleX) * (1 / ratio)) / height;
+        }
     }
-
+    
     if (scaleFromCenterToggled) {
       const center = getCenter({
         x,
@@ -138,9 +138,9 @@ export default (scaleType, {
         height,
         scaleX: currentProps.scaleX,
         scaleY: currentProps.scaleY,
-      })
-      currentProps.x = x + (point.x - center.x)
-      currentProps.y = y + (point.y - center.y)
+      });
+      currentProps.x = x + (point.x - center.x);
+      currentProps.y = y + (point.y - center.y);
     } else {
       const freshOppositePoint = getOppositePoint(scaleType, {
         width,
@@ -151,14 +151,14 @@ export default (scaleType, {
         scaleX: currentProps.scaleX,
         scaleY: currentProps.scaleY,
       });
-
-      currentProps.x = x + (oppositePoint.x - freshOppositePoint.x)
-      currentProps.y = y + (oppositePoint.y - freshOppositePoint.y)
+      
+      currentProps.x = x + (oppositePoint.x - freshOppositePoint.x);
+      currentProps.y = y + (oppositePoint.y - freshOppositePoint.y);
     }
-
+    
     onUpdate(currentProps);
-  }
-
+  };
+  
   drag(event); // run with initial mousedown event
   return drag;
 }
