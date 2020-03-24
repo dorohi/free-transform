@@ -19,7 +19,8 @@ import {
  * @param {number} payload.width original width
  * @param {number} payload.height original height
  * @param {number} payload.angle the angle of rotation
- * @param {number} payload.scaleLimit minimum scale limit
+ * @param {number} payload.scaleMinLimit minimum scale limit
+ * @param {number} payload.scaleMaxLimit minimum scale limit
  * @param {boolean} payload.scaleFromCenter by default scale from center
  * @param {boolean|number} payload.aspectRatio by default scale on aspect ration
  * @param {boolean} payload.enableScaleFromCenter completely disable scale from center
@@ -39,7 +40,8 @@ export default (scaleType, {
   width,
   height,
   angle,
-  scaleLimit,
+  scaleMinLimit,
+  scaleMaxLimit,
   scaleFromCenter = false,
   enableScaleFromCenter = true,
   aspectRatio = false,
@@ -106,8 +108,19 @@ export default (scaleType, {
       y: movePoint.y * cos - movePoint.x * sin
     };
     
-    currentProps.scaleX = Math.max(rotationPoint.x / width, scaleLimit);
-    currentProps.scaleY = Math.max(rotationPoint.y / height, scaleLimit);
+    const currentScaleX = rotationPoint.x / width;
+    currentProps.scaleX = (currentScaleX < scaleMinLimit)
+      ? scaleMinLimit
+      : (currentScaleX > scaleMaxLimit)
+        ? scaleMaxLimit
+        : currentScaleX;
+  
+    const currentScaleY = rotationPoint.y / height;
+    currentProps.scaleY = (currentScaleY < scaleMinLimit)
+      ? scaleMinLimit
+      : (currentScaleY > scaleMaxLimit)
+        ? scaleMaxLimit
+        : currentScaleY;
     
     switch (scaleType) {
       case 'ml':
