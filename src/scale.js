@@ -79,9 +79,14 @@ export default (scaleType, {
     // initialize center if point changed.
     if (scaleFromCenterToggled !== prevScaleFromCenterToggled) {
       prevScaleFromCenterToggled = scaleFromCenterToggled;
-      
-      startX = event.pageX || event.targetTouches[0].pageX;
-      startY = event.pageY || event.targetTouches[0].pageY;
+  
+      if (event.targetTouches && event.targetTouches.length >= 2) {
+        startX = (event.targetTouches[0].pageX - event.targetTouches[1].pageX) / 2;
+        startY = (event.targetTouches[0].pageY - event.targetTouches[1].pageY) / 2;
+      } else {
+        startX = event.pageX || event.targetTouches[0].pageX;
+        startY = event.pageY || event.targetTouches[0].pageY;
+      }
       
       point = getPoint(scaleType, {...currentProps, width, height, angle, scaleFromCenter: scaleFromCenterToggled});
       oppositePoint = getOppositePoint(scaleType, {...currentProps, width, height, angle});
@@ -89,10 +94,18 @@ export default (scaleType, {
       return; // moveDiff will be zero anyway. this is just an initializing call.
     }
     
-    const moveDiff = {
-      x: (event.pageX  || event.targetTouches[0].pageX) - startX,
-      y: (event.pageY  || event.targetTouches[0].pageY) - startY
-    };
+    let moveDiff = {};
+    if (event.targetTouches && event.targetTouches.length >= 2) {
+      moveDiff = {
+        x: ((event.targetTouches[0].pageX - event.targetTouches[1].pageX) / 2) - startX,
+        y: ((event.targetTouches[0].pageY - event.targetTouches[1].pageY) / 2) - startY
+      };
+    } else {
+      moveDiff = {
+        x: (event.pageX || event.targetTouches[0].pageX) - startX,
+        y: (event.pageY || event.targetTouches[0].pageY) - startY
+      };
+    }
     
     const movePoint = getMovePoint(scaleType, oppositePoint, point, moveDiff);
     
